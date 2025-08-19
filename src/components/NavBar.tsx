@@ -2,9 +2,11 @@ import { Link } from 'react-router-dom'
 
 const Navbar: React.FC = () => {
   return (
-    <nav style={{ padding: '1rem', borderBottom: '1px solid #ccc' }}>
-      <h1>Next Read</h1>
-      <Link to="/">Home</Link>
+    <nav>
+      <div className="container row" style={{ justifyContent: 'space-between' }}>
+        <Link to="/" className="brand">NextRead</Link>
+        <a href="https://books.google.com" target="_blank" rel="noreferrer">Google Books</a>
+      </div>
     </nav>
   )
 }
