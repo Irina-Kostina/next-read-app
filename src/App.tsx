@@ -3,6 +3,8 @@ import Navbar from './components/NavBar'
 import Home from './pages/Home'
 import NotFound from './pages/NotFound'
 import BookPage from './pages/BookPage'
+import Favourites from './pages/Favourites'
+
 
 function App() {
   return (
@@ -13,6 +15,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/book/:id" element={<BookPage />} />
           <Route path="*" element={<NotFound />} />
+          <Route path="/favourites" element={<Favourites />} />
         </Routes>
       </div>
     </>

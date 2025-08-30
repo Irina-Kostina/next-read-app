@@ -5,7 +5,10 @@ const Navbar: React.FC = () => {
     <nav>
       <div className="container row" style={{ justifyContent: 'space-between' }}>
         <Link to="/" className="brand">NextRead</Link>
-        <a href="https://books.google.com" target="_blank" rel="noreferrer">Google Books</a>
+        <div className="row" style={{ gap: 16 }}>
+          <Link to="/favourites">Favourites</Link>
+          <a href="https://books.google.com" target="_blank" rel="noreferrer">Google Books</a>
+        </div>
       </div>
     </nav>
   )
