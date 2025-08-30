@@ -6,25 +6,38 @@ type FetchOpts = {
   subject?: string
   maxResults?: number
   startIndex?: number
+  langRestrict?: string
+  orderBy?: 'relevance' | 'newest'
+  exactAuthor?: boolean
 }
 
 export type SearchResult = { items: Book[]; total: number }
 
 export async function fetchBooks(query: string, opts: FetchOpts = {}): Promise<SearchResult> {
-  const { inTitle = true, author, subject, maxResults = 20, startIndex = 0 } = opts
+  const { inTitle = true, author, subject, maxResults = 20, startIndex = 0, langRestrict, orderBy, exactAuthor = false, } = opts
 
   const parts: string[] = []
   const q = query.trim()
   if (q) parts.push(inTitle ? `intitle:${q}` : q)
-  if (author) parts.push(`inauthor:${author}`)
+  if (author) {
+    const a = exactAuthor ? `"${author}"` : author
+    parts.push(`inauthor:${a}`)
+  }
   if (subject) parts.push(`subject:${subject}`)
   if (parts.length === 0) throw new Error('Empty query')
 
-  const url =
-    `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(parts.join('+'))}` +
-    `&printType=books&maxResults=${maxResults}&startIndex=${startIndex}`
 
-  const res = await fetch(url)
+  const params = new URLSearchParams({
+    q: parts.join('+'),
+    printType: 'books',
+    maxResults: String(maxResults),
+    startIndex: String(startIndex),
+  })
+  if (langRestrict) params.set('langRestrict', langRestrict)
+  if (orderBy) params.set('orderBy', orderBy)
+  
+  
+  const res = await fetch(`https://www.googleapis.com/books/v1/volumes?${params.toString()}`)
   if (!res.ok) throw new Error(`Google Books error: ${res.status}`)
   const data = await res.json()
   return { items: data.items ?? [], total: data.totalItems ?? 0 }
