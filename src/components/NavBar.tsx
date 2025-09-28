@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { AuthButton } from './Auth'
+import { AuthButton } from './AuthButton'
 
 const Navbar: React.FC = () => {
   return (
@@ -9,7 +9,7 @@ const Navbar: React.FC = () => {
         <div className="row" style={{ gap: 16, alignItems: 'center' }}>
           <Link to="/favourites">Favourites</Link>
           <a href="https://books.google.com" target="_blank" rel="noreferrer">Google Books</a>
-          <AuthButton />
+          <AuthButton /> 
         </div>
       </div>
     </nav>

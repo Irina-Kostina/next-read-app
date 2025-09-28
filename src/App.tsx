@@ -4,23 +4,20 @@ import Home from './pages/Home'
 import NotFound from './pages/NotFound'
 import BookPage from './pages/BookPage'
 import Favourites from './pages/Favourites'
-import { AuthProvider } from './components/Auth'
 
 function App() {
   return (
-    <AuthProvider>
-      <>
-        <Navbar />
-        <div className="container">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/book/:id" element={<BookPage />} />
-            <Route path="*" element={<NotFound />} />
-            <Route path="/favourites" element={<Favourites />} />
-          </Routes>
-        </div>
-      </>
-    </AuthProvider>
+    <>
+      <Navbar />
+      <div className="container">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/book/:id" element={<BookPage />} />
+          <Route path="/favourites" element={<Favourites />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </div>
+    </>
   )
 }
 
