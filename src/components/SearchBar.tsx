@@ -15,30 +15,16 @@ const SearchBar: React.FC<Props> = ({ onSearch, initialQuery = '' }) => {
   }
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'flex', gap: 8, marginBottom: 16, maxWidth: 680 }}>
+    <form onSubmit={handleSubmit} className="search-form">
       <input
         aria-label="Search books"
         placeholder="Search books or authors…"
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        style={{ 
-          flex: 1, 
-          padding: '0.6rem 0.8rem', 
-          border: '1px solid #ccc', 
-          borderRadius: 6,
-          fontSize: '1rem'
-        }}
+        className="search-input"
       />
-      <button 
-        type="submit" 
-        className="btn btn-primary"
-        style={{ 
-          padding: '0.6rem 1.5rem', 
-          fontSize: '1rem',
-          fontWeight: '500'
-        }}
-      >
-        🔍 Search
+      <button type="submit" className="search-btn">
+        Search
       </button>
     </form>
   )

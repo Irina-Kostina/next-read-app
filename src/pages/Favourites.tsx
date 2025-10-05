@@ -26,13 +26,28 @@ const Favourites: React.FC = () => {
   }, [ids])
 
   return (
-    <div>
-      <h2>Your favourites ({ids.length})</h2>
-      {loading && <p>Loading…</p>}
-      {!loading && ids.length === 0 && <p>No saved books yet.</p>}
-      <div className="grid">
-        {books.map(b => <BookCard key={b.id} book={b} />)}
+    <div className="main-content">
+      <div className="page-header">
+        <h1 className="page-title">Your Library</h1>
+        <p className="page-subtitle">
+          Your personal collection of saved books ({ids.length} {ids.length === 1 ? 'book' : 'books'})
+        </p>
       </div>
+
+      {loading && <div className="loading">Loading your library…</div>}
+      {!loading && ids.length === 0 && (
+        <div className="no-results">
+          <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>📚</div>
+          <h3>No saved books yet</h3>
+          <p>Start exploring and save books you love to build your personal library!</p>
+        </div>
+      )}
+      
+      {books.length > 0 && (
+        <div className="books-grid">
+          {books.map(b => <BookCard key={b.id} book={b} />)}
+        </div>
+      )}
     </div>
   )
 }

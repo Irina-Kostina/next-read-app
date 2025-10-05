@@ -48,22 +48,74 @@ const BookPage: React.FC = () => {
 
   const v = book.volumeInfo
   return (
-    <div>
-      <p><Link to="/">← Back</Link></p>
-      <h1>{v.title}</h1>
-      {v.authors && <p><strong>Author:</strong> {v.authors.join(', ')}</p>}
-      {v.publishedDate && <p><strong>Published:</strong> {v.publishedDate}</p>}
-      {v.categories && <p><strong>Genres:</strong> {v.categories.join(', ')}</p>}
-      {v.imageLinks?.thumbnail && <img src={v.imageLinks.thumbnail} alt={v.title} style={{ borderRadius: 8 }} />}
-      {v.description && <p style={{ marginTop: '1rem', lineHeight: 1.6 }}>{v.description}</p>}
+    <div className="main-content">
+      <div className="card">
+        <div className="row mb-3">
+          <Link to="/" className="btn btn-secondary">
+            ← Back to Search
+          </Link>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '200px 1fr', gap: '2rem', marginBottom: '2rem' }}>
+          {v.imageLinks?.thumbnail && (
+            <div>
+              <img 
+                src={v.imageLinks.thumbnail} 
+                alt={v.title} 
+                style={{ 
+                  width: '100%', 
+                  borderRadius: 'var(--radius-lg)',
+                  boxShadow: 'var(--shadow-md)'
+                }} 
+              />
+            </div>
+          )}
+          
+          <div>
+            <h1 className="page-title" style={{ fontSize: '2rem', marginBottom: '1rem' }}>
+              {v.title}
+            </h1>
+            
+            {v.authors && (
+              <p style={{ fontSize: '1.2rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                by {v.authors.join(', ')}
+              </p>
+            )}
+            
+            <div className="book-metadata">
+              {v.publishedDate && (
+                <div className="metadata-item">
+                  <span>📅</span>
+                  <span>Published: {v.publishedDate}</span>
+                </div>
+              )}
+              {v.categories && (
+                <div className="metadata-item">
+                  <span>🏷️</span>
+                  <span>Genres: {v.categories.join(', ')}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {v.description && (
+          <div style={{ marginBottom: '2rem' }}>
+            <h3 style={{ marginBottom: '1rem', color: 'var(--text-primary)' }}>Description</h3>
+            <p style={{ lineHeight: 1.6, color: 'var(--text-secondary)' }}>{v.description}</p>
+          </div>
+        )}
+      </div>
 
       {similar.length > 0 && (
-        <>
-          <h3 style={{ marginTop: 24 }}>More like this</h3>
-          <div className="grid">
+        <div style={{ marginTop: '3rem' }}>
+          <h2 className="page-title" style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>
+            More like this
+          </h2>
+          <div className="books-grid">
             {similar.map((b) => <BookCard key={b.id} book={b} />)}
           </div>
-        </>
+        </div>
       )}
     </div>
   )

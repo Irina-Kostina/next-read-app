@@ -152,73 +152,103 @@ const Home: React.FC = () => {
   }, [query, author, lang, sort, fictionOnly, exactAuthor, page, setSearchParams])
 
   return (
-    <div>
-      <h2>Find your next read</h2>
+    <div className="main-content">
+      {!hasSearched && (
+        <div className="page-header">
+          <div className="btn btn-primary mb-3">
+            ✨ AI-POWERED DISCOVERY
+          </div>
+          <h1 className="page-title">Find Your Perfect Book Match</h1>
+          <p className="page-subtitle">
+            Discover amazing books tailored to your taste with our intelligent recommendation system
+          </p>
+        </div>
+      )}
 
-      <SearchBar onSearch={(q) => runSearch(q, 0)} initialQuery={query} />
-      <AuthorFilter author={author} onChange={setAuthor} />
+      <div className="search-section">
+        <h2 className="search-title">What would you like to read?</h2>
+        <SearchBar onSearch={(q) => runSearch(q, 0)} initialQuery={query} />
+        <AuthorFilter author={author} onChange={setAuthor} />
 
-      <div className="row" style={{ gap: 8, maxWidth: 680, marginBottom: 12, flexWrap: 'wrap' }}>
-        <label className="row" style={{ gap: 6 }}>
-          <input
-            type="checkbox"
-            checked={fictionOnly}
-            onChange={(e) => setFictionOnly(e.target.checked)}
-          />
-          Fiction only
-        </label>
-        <label className="row" style={{ gap: 6 }}>
-          <input
-            type="checkbox"
-            checked={exactAuthor}
-            onChange={(e) => setExactAuthor(e.target.checked)}
-          />
-          Exact author
-        </label>
+        <div className="filters-grid">
+          <div className="filter-group">
+            <span className="filter-label">Content Type</span>
+            <div className="filter-checkbox">
+              <input
+                type="checkbox"
+                id="fiction"
+                checked={fictionOnly}
+                onChange={(e) => setFictionOnly(e.target.checked)}
+              />
+              <label htmlFor="fiction">Fiction Only</label>
+            </div>
+          </div>
 
-        <select className="input" value={lang} onChange={(e) => setLang(e.target.value)}>
-          <option value="">Any language</option>
-          <option value="en">English</option>
-          <option value="ru">Russian</option>
-          <option value="de">German</option>
-          <option value="fr">French</option>
-          <option value="es">Spanish</option>
-          <option value="it">Italian</option>
-          <option value="ja">Japanese</option>
-          <option value="zh">Chinese</option>
-        </select>
+          <div className="filter-group">
+            <span className="filter-label">Author Match</span>
+            <div className="filter-checkbox">
+              <input
+                type="checkbox"
+                id="exact"
+                checked={exactAuthor}
+                onChange={(e) => setExactAuthor(e.target.checked)}
+              />
+              <label htmlFor="exact">Exact Author</label>
+            </div>
+          </div>
 
-        <select
-          className="input"
-          value={sort}
-          onChange={(e) => setSort(e.target.value as 'relevance' | 'newest')}
-        >
-          <option value="relevance">Sort: Relevance</option>
-          <option value="newest">Sort: Newest</option>
-        </select>
+          <div className="filter-group">
+            <span className="filter-label">Language</span>
+            <select className="filter-select" value={lang} onChange={(e) => setLang(e.target.value)}>
+              <option value="">Any language</option>
+              <option value="en">English</option>
+              <option value="ru">Russian</option>
+              <option value="de">German</option>
+              <option value="fr">French</option>
+              <option value="es">Spanish</option>
+              <option value="it">Italian</option>
+              <option value="ja">Japanese</option>
+              <option value="zh">Chinese</option>
+            </select>
+          </div>
+
+          <div className="filter-group">
+            <span className="filter-label">Sort By</span>
+            <select
+              className="filter-select"
+              value={sort}
+              onChange={(e) => setSort(e.target.value as 'relevance' | 'newest')}
+            >
+              <option value="relevance">Relevance</option>
+              <option value="newest">Newest</option>
+            </select>
+          </div>
+        </div>
       </div>
 
-      {loading && <p>Loading…</p>}
-      {error && <p style={{ color: 'red' }}>Error: {error}</p>}
-      {!loading && !error && hasSearched && books.length === 0 && <p>No results.</p>}
+      {loading && <div className="loading">Loading…</div>}
+      {error && <div className="error">Error: {error}</div>}
+      {!loading && !error && hasSearched && books.length === 0 && <div className="no-results">No results found.</div>}
 
       {hasSearched && books.length > 0 && (
-        <div style={{ marginBottom: '1rem', color: '#6b7280', fontSize: '0.9rem' }}>
+        <div className="text-center mb-3" style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
           Showing {books.length} of {total} results
         </div>
       )}
 
-      <div className="grid">
-        {books.map((b) => (
-          <BookCard key={b.id} book={b} />
-        ))}
-      </div>
+      {books.length > 0 && (
+        <div className="books-grid">
+          {books.map((b) => (
+            <BookCard key={b.id} book={b} />
+          ))}
+        </div>
+      )}
 
       {/* Infinite scroll trigger */}
       {hasMore && (
         <div ref={loadMoreRef} style={{ height: '20px', margin: '2rem 0' }}>
           {loadingMore && (
-            <div style={{ textAlign: 'center', color: '#6b7280' }}>
+            <div className="loading">
               Loading more books...
             </div>
           )}
@@ -226,7 +256,7 @@ const Home: React.FC = () => {
       )}
 
       {!hasMore && books.length > 0 && (
-        <div style={{ textAlign: 'center', color: '#6b7280', margin: '2rem 0' }}>
+        <div className="text-center mt-4" style={{ color: 'var(--text-secondary)' }}>
           You've reached the end of the results
         </div>
       )}
