@@ -13,6 +13,11 @@ export interface VolumeInfo {
   language?: string
   pageCount?: number
   publisher?: string
+  averageRating?: number
+  ratingsCount?: number
+  previewLink?: string
+  infoLink?: string
+  canonicalVolumeLink?: string
 }
 
 export interface Book {

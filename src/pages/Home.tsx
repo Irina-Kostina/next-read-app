@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import SearchBar from '../components/SearchBar'
 import AuthorFilter from '../components/AuthorFilter'
@@ -11,14 +11,14 @@ const PAGE_SIZE = 20
 const Home: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams()
 
-  const [query, setQuery] = useState(() => searchParams.get('q') ?? 'Harry Potter')
+  // Start blank if no params
+  const [query, setQuery] = useState(() => searchParams.get('q') ?? '')
   const [author, setAuthor] = useState(() => searchParams.get('author') ?? '')
-  const [lang, setLang] = useState(() => searchParams.get('lang') ?? 'en')
-  const [sort, setSort] = useState<'relevance'|'newest'>(() =>
-    (searchParams.get('sort') as 'relevance'|'newest') ?? 'relevance'
+  const [lang, setLang] = useState(() => searchParams.get('lang') ?? '')
+  const [sort, setSort] = useState<'relevance' | 'newest'>(
+    () => (searchParams.get('sort') as 'relevance' | 'newest') ?? 'relevance'
   )
 
-  // NEW: toggles with URL defaults
   const [fictionOnly, setFictionOnly] = useState(() => searchParams.get('fiction') === '1')
   const [exactAuthor, setExactAuthor] = useState(() => searchParams.get('exact') === '1')
 
@@ -26,83 +26,153 @@ const Home: React.FC = () => {
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(() => Number(searchParams.get('page') ?? 0))
   const [loading, setLoading] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [hasSearched, setHasSearched] = useState(false) // Track if user searched
+  const [hasMore, setHasMore] = useState(true)
+  
+  const observerRef = useRef<IntersectionObserver | null>(null)
+  const loadMoreRef = useRef<HTMLDivElement | null>(null)
 
   const runSearch = async (
     q: string,
     p = 0,
     a = author,
     l = lang,
-    s: 'relevance'|'newest' = sort,
+    s: 'relevance' | 'newest' = sort,
     f = fictionOnly,
-    e = exactAuthor
+    e = exactAuthor,
+    append = false
   ) => {
-    setLoading(true)
+    if (!q) return // skip blank searches
+    
+    if (append) {
+      setLoadingMore(true)
+    } else {
+      setLoading(true)
+      setBooks([])
+    }
     setError(null)
+    
     try {
       const { items, total } = await fetchBooks(q, {
         inTitle: true,
         author: a || undefined,
-        subject: f ? 'fiction' : undefined,       // NEW
+        subject: f ? 'fiction' : undefined,
         startIndex: p * PAGE_SIZE,
         maxResults: PAGE_SIZE,
         langRestrict: l || undefined,
         orderBy: s,
-        exactAuthor: e,                           // NEW
+        exactAuthor: e,
       })
-      setBooks(items)
+      
+      if (append) {
+        setBooks(prev => [...prev, ...items])
+      } else {
+        setBooks(items)
+      }
+      
       setTotal(total)
       setPage(p)
       setQuery(q)
+      setHasSearched(true)
+      setHasMore(items.length === PAGE_SIZE && (p + 1) * PAGE_SIZE < total)
     } catch (e) {
-      setBooks([])
-      setTotal(0)
+      if (!append) {
+        setBooks([])
+        setTotal(0)
+      }
       setError((e as Error).message)
+      setHasSearched(true)
+      setHasMore(false)
     } finally {
       setLoading(false)
+      setLoadingMore(false)
     }
   }
 
+  // Load from URL if there's a query
   useEffect(() => {
-    runSearch(query, page)
+    if (query) {
+      runSearch(query, page)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Re-run when any filter changes
+  // When filters change, re-run search (if already searched)
   useEffect(() => {
-    runSearch(query, 0, author, lang, sort, fictionOnly, exactAuthor)
+    if (query) {
+      runSearch(query, 0, author, lang, sort, fictionOnly, exactAuthor)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [author, lang, sort, fictionOnly, exactAuthor])
 
-  // Keep URL shareable
-  useEffect(() => {
-    const params: Record<string, string> = {
-      q: query, page: String(page), sort,
+  // Load more books when user scrolls to bottom
+  const loadMore = useCallback(() => {
+    if (!loadingMore && hasMore && query) {
+      runSearch(query, page + 1, author, lang, sort, fictionOnly, exactAuthor, true)
     }
+  }, [loadingMore, hasMore, query, page, author, lang, sort, fictionOnly, exactAuthor])
+
+  // Set up intersection observer for infinite scroll
+  useEffect(() => {
+    if (observerRef.current) observerRef.current.disconnect()
+    
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loadingMore) {
+          loadMore()
+        }
+      },
+      { threshold: 0.1 }
+    )
+    
+    if (loadMoreRef.current) {
+      observerRef.current.observe(loadMoreRef.current)
+    }
+    
+    return () => {
+      if (observerRef.current) observerRef.current.disconnect()
+    }
+  }, [loadMore, hasMore, loadingMore])
+
+  // ✅ Clean URL: only meaningful params
+  useEffect(() => {
+    const params: Record<string, string> = {}
+
+    if (query) params.q = query
+    if (page > 0) params.page = String(page)
+    if (sort !== 'relevance') params.sort = sort
     if (author) params.author = author
     if (lang) params.lang = lang
     if (fictionOnly) params.fiction = '1'
     if (exactAuthor) params.exact = '1'
+
     setSearchParams(params, { replace: true })
   }, [query, author, lang, sort, fictionOnly, exactAuthor, page, setSearchParams])
-
-  const totalPages = Math.ceil(total / PAGE_SIZE)
 
   return (
     <div>
       <h2>Find your next read</h2>
 
-      <SearchBar onSearch={(q) => runSearch(q, 0)} initialQuery={query} debounceMs={500} />
+      <SearchBar onSearch={(q) => runSearch(q, 0)} initialQuery={query} />
       <AuthorFilter author={author} onChange={setAuthor} />
 
-      {/* NEW toggles + existing selects */}
       <div className="row" style={{ gap: 8, maxWidth: 680, marginBottom: 12, flexWrap: 'wrap' }}>
         <label className="row" style={{ gap: 6 }}>
-          <input type="checkbox" checked={fictionOnly} onChange={(e) => setFictionOnly(e.target.checked)} />
+          <input
+            type="checkbox"
+            checked={fictionOnly}
+            onChange={(e) => setFictionOnly(e.target.checked)}
+          />
           Fiction only
         </label>
         <label className="row" style={{ gap: 6 }}>
-          <input type="checkbox" checked={exactAuthor} onChange={(e) => setExactAuthor(e.target.checked)} />
+          <input
+            type="checkbox"
+            checked={exactAuthor}
+            onChange={(e) => setExactAuthor(e.target.checked)}
+          />
           Exact author
         </label>
 
@@ -118,7 +188,11 @@ const Home: React.FC = () => {
           <option value="zh">Chinese</option>
         </select>
 
-        <select className="input" value={sort} onChange={(e) => setSort(e.target.value as 'relevance'|'newest')}>
+        <select
+          className="input"
+          value={sort}
+          onChange={(e) => setSort(e.target.value as 'relevance' | 'newest')}
+        >
           <option value="relevance">Sort: Relevance</option>
           <option value="newest">Sort: Newest</option>
         </select>
@@ -126,21 +200,34 @@ const Home: React.FC = () => {
 
       {loading && <p>Loading…</p>}
       {error && <p style={{ color: 'red' }}>Error: {error}</p>}
-      {!loading && !error && books.length === 0 && <p>No results.</p>}
+      {!loading && !error && hasSearched && books.length === 0 && <p>No results.</p>}
+
+      {hasSearched && books.length > 0 && (
+        <div style={{ marginBottom: '1rem', color: '#6b7280', fontSize: '0.9rem' }}>
+          Showing {books.length} of {total} results
+        </div>
+      )}
 
       <div className="grid">
-        {books.map((b) => <BookCard key={b.id} book={b} />)}
+        {books.map((b) => (
+          <BookCard key={b.id} book={b} />
+        ))}
       </div>
 
-      {totalPages > 1 && (
-        <div className="row" style={{ marginTop: 16 }}>
-          <button className="btn" disabled={page === 0 || loading} onClick={() => runSearch(query, page - 1)}>
-            ← Prev
-          </button>
-          <span style={{ padding: '0 .5rem' }}>Page {page + 1} / {totalPages}</span>
-          <button className="btn" disabled={page + 1 >= totalPages || loading} onClick={() => runSearch(query, page + 1)}>
-            Next →
-          </button>
+      {/* Infinite scroll trigger */}
+      {hasMore && (
+        <div ref={loadMoreRef} style={{ height: '20px', margin: '2rem 0' }}>
+          {loadingMore && (
+            <div style={{ textAlign: 'center', color: '#6b7280' }}>
+              Loading more books...
+            </div>
+          )}
+        </div>
+      )}
+
+      {!hasMore && books.length > 0 && (
+        <div style={{ textAlign: 'center', color: '#6b7280', margin: '2rem 0' }}>
+          You've reached the end of the results
         </div>
       )}
     </div>

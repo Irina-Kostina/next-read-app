@@ -1,34 +1,17 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 
 type Props = {
   onSearch: (q: string) => void
   initialQuery?: string
-  debounceMs?: number
 }
 
-const SearchBar: React.FC<Props> = ({ onSearch, initialQuery = '', debounceMs = 500 }) => {
+const SearchBar: React.FC<Props> = ({ onSearch, initialQuery = '' }) => {
   const [value, setValue] = useState(initialQuery)
-
-  // Keep the latest onSearch without putting it in the effect deps
-  const onSearchRef = useRef(onSearch)
-  useEffect(() => {
-    onSearchRef.current = onSearch
-  }, [onSearch])
-
-  // Debounce only on value change (not on onSearch identity change)
-  useEffect(() => {
-    if (!debounceMs) return
-    const id = setTimeout(() => {
-      const q = value.trim()
-      if (q) onSearchRef.current(q)
-    }, debounceMs)
-    return () => clearTimeout(id)
-  }, [value, debounceMs]) // ← intentionally not including onSearch
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     const q = value.trim()
-    if (q) onSearchRef.current(q)
+    if (q) onSearch(q)
   }
 
   return (
@@ -38,10 +21,24 @@ const SearchBar: React.FC<Props> = ({ onSearch, initialQuery = '', debounceMs = 
         placeholder="Search books or authors…"
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        style={{ flex: 1, padding: '0.6rem 0.8rem', border: '1px solid #ccc', borderRadius: 6 }}
+        style={{ 
+          flex: 1, 
+          padding: '0.6rem 0.8rem', 
+          border: '1px solid #ccc', 
+          borderRadius: 6,
+          fontSize: '1rem'
+        }}
       />
-      <button type="submit" style={{ padding: '0.6rem 1rem', borderRadius: 6, border: '1px solid #ccc' }}>
-        Search
+      <button 
+        type="submit" 
+        className="btn btn-primary"
+        style={{ 
+          padding: '0.6rem 1.5rem', 
+          fontSize: '1rem',
+          fontWeight: '500'
+        }}
+      >
+        🔍 Search
       </button>
     </form>
   )
