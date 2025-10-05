@@ -6,7 +6,7 @@ import { fetchBooks } from '../services/bookService'
 import BookCard from '../components/BookCard'
 import type { Book } from '../types/book'
 
-const PAGE_SIZE = 20
+const PAGE_SIZE = 10
 
 const Home: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -15,6 +15,8 @@ const Home: React.FC = () => {
   const [query, setQuery] = useState(() => searchParams.get('q') ?? '')
   const [author, setAuthor] = useState(() => searchParams.get('author') ?? '')
   const [lang, setLang] = useState(() => searchParams.get('lang') ?? '')
+  const [genre, setGenre] = useState(() => searchParams.get('genre') ?? '')
+  const [minRating, setMinRating] = useState<number>(() => Number(searchParams.get('rating') ?? 0))
   const [sort, setSort] = useState<'relevance' | 'newest'>(
     () => (searchParams.get('sort') as 'relevance' | 'newest') ?? 'relevance'
   )
@@ -30,6 +32,7 @@ const Home: React.FC = () => {
   const [error, setError] = useState<string | null>(null)
   const [hasSearched, setHasSearched] = useState(false) // Track if user searched
   const [hasMore, setHasMore] = useState(true)
+  const [showAdvanced, setShowAdvanced] = useState(false)
   
   const observerRef = useRef<IntersectionObserver | null>(null)
   const loadMoreRef = useRef<HTMLDivElement | null>(null)
@@ -65,18 +68,29 @@ const Home: React.FC = () => {
         orderBy: s,
         exactAuthor: e,
       })
-      
+      // Client-side filtering: languages, genres, rating
+      const languageSet = new Set(l ? [l] : [])
+      const genreSet = new Set(genre ? [genre] : [])
+      const filtered = items.filter(b => {
+        const v = b.volumeInfo
+        const langOk = languageSet.size === 0 || (v.language && languageSet.has(v.language))
+        const genreOk = genreSet.size === 0 || (v.categories?.some(c => Array.from(genreSet).some(g => c.toLowerCase().includes(g.toLowerCase()))) ?? false)
+        const ratingOk = (v.averageRating ?? 0) >= (minRating || 0)
+        return langOk && genreOk && ratingOk
+      })
+
       if (append) {
-        setBooks(prev => [...prev, ...items])
+        setBooks(prev => [...prev, ...filtered])
       } else {
-        setBooks(items)
+        setBooks(filtered)
       }
       
       setTotal(total)
       setPage(p)
       setQuery(q)
       setHasSearched(true)
-      setHasMore(items.length === PAGE_SIZE && (p + 1) * PAGE_SIZE < total)
+      // Limit UI to a single batch of up to 10 books
+      setHasMore(false)
     } catch (e) {
       if (!append) {
         setBooks([])
@@ -105,7 +119,7 @@ const Home: React.FC = () => {
       runSearch(query, 0, author, lang, sort, fictionOnly, exactAuthor)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [author, lang, sort, fictionOnly, exactAuthor])
+  }, [author, lang, sort, fictionOnly, exactAuthor, genre, minRating])
 
   // Load more books when user scrolls to bottom
   const loadMore = useCallback(() => {
@@ -145,6 +159,8 @@ const Home: React.FC = () => {
     if (sort !== 'relevance') params.sort = sort
     if (author) params.author = author
     if (lang) params.lang = lang
+    if (genre) params.genre = genre
+    if (minRating > 0) params.rating = String(minRating)
     if (fictionOnly) params.fiction = '1'
     if (exactAuthor) params.exact = '1'
 
@@ -168,10 +184,19 @@ const Home: React.FC = () => {
       <div className="search-section">
         <h2 className="search-title">What would you like to read?</h2>
         <SearchBar onSearch={(q) => runSearch(q, 0)} initialQuery={query} />
-        <AuthorFilter author={author} onChange={setAuthor} />
 
-        <div className="filters-grid">
-          <div className="filter-group">
+        <button className="advanced-toggle" onClick={() => setShowAdvanced(v => !v)}>
+          <span>{showAdvanced ? '▲' : '▼'}</span>
+          <span>{showAdvanced ? 'Hide advanced filters' : 'Advanced filters'}</span>
+        </button>
+
+        {showAdvanced && (
+        <div className="advanced-content">
+          <AuthorFilter author={author} onChange={setAuthor} />
+
+          <div className="filters-2col">
+          <div className="filters-col">
+            <div className="filter-group">
             <span className="filter-label">Content Type</span>
             <div className="filter-checkbox">
               <input
@@ -182,9 +207,9 @@ const Home: React.FC = () => {
               />
               <label htmlFor="fiction">Fiction Only</label>
             </div>
-          </div>
+            </div>
 
-          <div className="filter-group">
+            <div className="filter-group">
             <span className="filter-label">Author Match</span>
             <div className="filter-checkbox">
               <input
@@ -195,9 +220,11 @@ const Home: React.FC = () => {
               />
               <label htmlFor="exact">Exact Author</label>
             </div>
+            </div>
           </div>
 
-          <div className="filter-group">
+          <div className="filters-col">
+            <div className="filter-group">
             <span className="filter-label">Language</span>
             <select className="filter-select" value={lang} onChange={(e) => setLang(e.target.value)}>
               <option value="">Any language</option>
@@ -210,6 +237,34 @@ const Home: React.FC = () => {
               <option value="ja">Japanese</option>
               <option value="zh">Chinese</option>
             </select>
+            </div>
+
+            <div className="filter-group">
+            <span className="filter-label">📚 Genre</span>
+            <select className="filter-select" value={genre} onChange={(e) => setGenre(e.target.value)}>
+              <option value="">Any genre</option>
+              <option value="fiction">Fiction</option>
+              <option value="fantasy">Fantasy</option>
+              <option value="romance">Romance</option>
+              <option value="self-help">Self-Help</option>
+              <option value="history">History</option>
+              <option value="biography">Biography</option>
+              <option value="science">Science</option>
+              <option value="technology">Technology</option>
+              <option value="mystery">Mystery</option>
+              <option value="thriller">Thriller</option>
+              <option value="young adult">Young Adult</option>
+            </select>
+            </div>
+
+            <div className="filter-group">
+            <span className="filter-label">⭐ Rating above</span>
+            <select className="filter-select" value={minRating} onChange={(e) => setMinRating(Number(e.target.value))}>
+              {[0,1,2,3,4].map(r => (
+                <option key={r} value={r}>{r}+</option>
+              ))}
+            </select>
+            </div>
           </div>
 
           <div className="filter-group">
@@ -223,7 +278,9 @@ const Home: React.FC = () => {
               <option value="newest">Newest</option>
             </select>
           </div>
+          </div>
         </div>
+        )}
       </div>
 
       {loading && <div className="loading">Loading…</div>}
@@ -232,7 +289,7 @@ const Home: React.FC = () => {
 
       {hasSearched && books.length > 0 && (
         <div className="text-center mb-3" style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-          Showing {books.length} of {total} results
+          Showing {books.length} results
         </div>
       )}
 
