@@ -492,6 +492,7 @@ nav .brand {
   flex: 1;
   display: -webkit-box;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -566,6 +567,29 @@ nav .brand {
   transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
 }
+
+.preview-btn {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  background: var(--accent-pink); /* use pink for contrast with purple */
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  text-decoration: none; /* for <a> tag */
+}
+
+.preview-btn:hover {
+  background: var(--accent-orange);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+
 
 /* Pagination */
 .pagination {

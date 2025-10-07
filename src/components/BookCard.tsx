@@ -119,12 +119,12 @@ const BookCard: React.FC<Props> = ({ book }) => {
               rel="noopener noreferrer"
               className="preview-btn"
             >
-              👁️ Preview
+              Preview
             </a>
           )}
           
           <Link to={`/book/${book.id}`} className="details-btn">
-            📖 Details
+            Details
           </Link>
         </div>
       </div>

@@ -32,6 +32,10 @@ const Favourites: React.FC = () => {
         <p className="page-subtitle">
           Your personal collection of saved books ({ids.length} {ids.length === 1 ? 'book' : 'books'})
         </p>
+        <p style={{ marginTop: '1rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
+          To add books to favourites, please <span style={{ color: 'var(--primary-purple)', fontWeight: 600 }}>log in</span> or <span style={{ color: 'var(--accent-pink)', fontWeight: 600 }}>sign up</span>.
+        </p>
+
       </div>
 
       {loading && <div className="loading">Loading your library…</div>}
