@@ -1,69 +1,100 @@
-# React + TypeScript + Vite
+# 📚 NextRead
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+NextRead is a simple and smart **book recommendation app** that helps people find their next great read based on their interests, favourite genres, and authors.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## App Purpose
 
-## Expanding the ESLint configuration
+**NextRead** is built to make it easy and fun for users to discover new books they’ll enjoy.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+When you finish a book, it can be hard to decide what to read next — there are too many choices online. **NextRead** solves this problem by showing book suggestions based on what you already like.
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+You can:
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+- Search for books by title, author, or genre.
+- Filter results by language or rating.
+- Save your favourites to keep track of what you love.
+- Get smart recommendations (currently rule-based) — for example:
+  > If you liked _The Hobbit_, you’ll see more fantasy adventure books.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+The goal of **NextRead** is to make book discovery personal and effortless — like having a friendly reading assistant who always knows what you’ll enjoy next.
+
+---
+
+## How It Works
+
+1. **Search for books** using the search bar.
+2. **Apply filters** to narrow down results (by author, genre, or rating).
+3. **Click on a book card** to view details.
+4. **Add books to your favourites** to build your personal reading list.
+5. **View recommendations** on the home page when you haven’t searched yet — these are generated based on your past favourites or last read genre.
+
+---
+
+## Tech Stack
+
+- **Frontend:** React + TypeScript
+- **Routing:** React Router
+- **State Management:** React Context + React Query
+- **Styling:** CSS / Tailwind (if added later)
+- **Backend (optional):** Express (for API handling)
+- **Data:** Book data fetched from a public books API (or local dataset)
+
+---
+
+## Getting Started
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/Irina-Kostina/next-read-app
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. Install dependencies
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cd nextread
+npm install
 ```
+
+### 3. Run the app
+
+```bash
+npm run dev
+```
+
+The app will open in your browser (default: http://localhost:5173).
+
+## 🔮 Future Improvements
+
+Add user authentication (login/signup).
+
+Improve recommendation system with AI or collaborative filtering.
+
+Add user reviews and book ratings.
+
+Save reading history.
+
+Dark/light mode switch.
+
+Mobile app version built with React Native.
+
+## Learning Goals
+
+This project was created as a study exercise to:
+
+Practice React and TypeScript in a real app.
+
+Work with APIs and async data fetching.
+
+Build filtering and recommendation logic.
+
+Understand how to manage state and search params.
+
+Create a simple, user-friendly UI.
+
+## License
+
+This project is for educational and personal portfolio purposes.
+All book data is powered by a public API.
