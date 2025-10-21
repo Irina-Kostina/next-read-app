@@ -24,10 +24,10 @@ const Navbar: React.FC = () => {
           </a>
         </div>
 
-        <div className="nav-actions">
+        {/* <div className="nav-actions">
           <button className="btn btn-secondary">Log In</button>
           <button className="btn btn-primary">Sign Up</button>
-        </div>
+        </div> */}
       </div>
     </nav>
   )

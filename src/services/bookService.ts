@@ -1,5 +1,28 @@
 import type { Book } from '../types/book'
 
+/**
+ * Get recommended books from a list based on last read and favourite genres
+ */
+export function getRecommendedBooksFromList(
+  books: Book[],
+  lastReadTitle: string,
+  favouriteGenres: string[]
+): Book[] {
+  return books.filter(book => {
+    // Exclude the last read book
+    if (book.volumeInfo.title === lastReadTitle) return false
+
+    // Check if book has matching categories (Google Books genre field)
+    const categories = book.volumeInfo.categories || []
+    const hasMatchingGenre = categories.some(cat =>
+      favouriteGenres.includes(cat)
+    )
+
+    return hasMatchingGenre
+  })
+}
+
+
 type FetchOpts = {
   inTitle?: boolean
   author?: string

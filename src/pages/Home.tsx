@@ -150,7 +150,6 @@ const Home: React.FC = () => {
     }
   }, [loadMore, hasMore, loadingMore])
 
-  // ✅ Clean URL: only meaningful params
   useEffect(() => {
     const params: Record<string, string> = {}
 
